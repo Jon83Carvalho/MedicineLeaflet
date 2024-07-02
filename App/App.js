@@ -10,6 +10,7 @@ export default function App() {
   
   const [recording, setRecording] = useState();
   const [permissionResponse, requestPermission] = Audio.usePermissions();
+  const [recordUri,setrecordURI]=useState("")
   //const { devices } = useMediaDevices();
 
   // // similar to componentDidMount and componentDidUpdate
@@ -32,6 +33,7 @@ export default function App() {
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
+        
       });
 
       console.log('Starting recording..');
@@ -55,19 +57,22 @@ export default function App() {
       }
     );
     const uri = recording.getURI();
-  
+    setrecordURI(uri)
     console.log('Recording stopped and stored at', uri);
 
-    // Create a file name for the recording
-    const fileName = `recording-${Date.now()}.caf`;
+    
 
-    // Move the recording to the new directory with the new file name
-    await FileSystem.makeDirectoryAsync(FileSystem.documentDirectory + 'recordings/', { intermediates: true });
-    await FileSystem.moveAsync({
-      from: uri,
-      to: FileSystem.documentDirectory + 'recordings/' + `${fileName}`
-});
+   }
 
+   async function _playRecording(){
+    if(recordUri) {
+     
+      const {sound} = await Audio.Sound.createAsync({uri:recordUri},{shouldPlay:true});
+
+      await sound.setPositionAsync(0);
+      console.log(recordUri,"tocando audio")
+      await sound.playAsync();
+    }
    }
 
    
@@ -85,6 +90,9 @@ export default function App() {
 
       <Pressable onPress={recording ? _stopRecording : _startRecording} style={{backgroundColor:'gray', borderRadius:8,padding:4}}>
       <Text>{recording ? 'Stop Recording' : 'Start Recording'}</Text>
+      </Pressable>
+      <Pressable onPress={_playRecording} style={{backgroundColor:'gray', borderRadius:8,padding:4}}>
+      <Text>Tocar</Text>
       </Pressable>
            <StatusBar style="auto" />
     </View>
