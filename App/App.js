@@ -4,6 +4,12 @@ import { StyleSheet, Text, View, Pressable } from "react-native";
 import { Audio } from "expo-av";
 import { useMediaDevices } from "react-media-devices";
 import * as FileSystem from 'expo-file-system';
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+// Access your API key as an environment variable (see "Set up your API key" above)
+const genAI = new GoogleGenerativeAI(process.env.EXPO_PUBLIC_GEMINI_KEY);
+
+console.log(process.env.EXPO_PUBLIC_GEMINI_KEY)
 
 
 export default function App() {
@@ -11,19 +17,27 @@ export default function App() {
   const [recording, setRecording] = useState();
   const [permissionResponse, requestPermission] = Audio.usePermissions();
   const [recordUri,setrecordURI]=useState("")
-  //const { devices } = useMediaDevices();
+  
 
-  // // similar to componentDidMount and componentDidUpdate
-  // useEffect(() => {
-  //   _askForPermissions();
-  // });
+  ///////GEMINI API=====================================================================
+  async function run() {
+  // The Gemini 1.5 models are versatile and work with both text-only and multimodal prompts
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
 
-  // async function _askForPermissions() {
-  //   const response = await Permissions.askAsync(Permissions.AUDIO_RECORDING);
-  //   setAllowRecord(response.status);
-  // }
+  const prompt = "Write a story about a magic backpack."
 
-  // let currentRecordingStatus;
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  const text = response.text();
+  console.log(text);
+}
+
+  run();
+
+
+  ///////++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
   async function _startRecording() {
     try {
       if (permissionResponse.status !== 'granted') {
@@ -99,28 +113,7 @@ export default function App() {
     
   );
 
-  // return (
-  //   <View style={styles.container}>
-  //     <Text>Open up App.tsx to start working on your app!</Text>
 
-  //     <Button title="start record" onPress={_startRecording} />
-  //     <Button title="stop record" onPress={_stopRecording} />
-
-  //     <View>
-  //       <Text>Recording permission: {true} </Text>
-  //       <Text style={{ fontSize: 15 }}>
-  //         Can record: 
-  //       </Text>
-  //       <Text>Is recording: </Text>
-  //       <Text>
-  //         Is done recording: 
-  //       </Text>
-  //       <Text>Recording time: </Text>
-  //     </View>
-
-  //     <StatusBar style="auto" />
-  //   </View>
-  // );
 }
 
 const styles = StyleSheet.create({
