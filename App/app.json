@@ -13,7 +13,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "infoPlist":{
+      "infoPlist": {
         "UIBackgroundModes": [
           "audio"
         ]
@@ -27,6 +27,13 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+      "expo-asset",
+      {
+        "assets": ["./assets/images/cat.jpg"]
+      }]
+    ]
   }
 }

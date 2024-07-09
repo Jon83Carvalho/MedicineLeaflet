@@ -1,15 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, Pressable } from "react-native";
+import { StyleSheet, Text, View, Pressable,Image } from "react-native";
 import { Audio } from "expo-av";
-import { useMediaDevices } from "react-media-devices";
-import * as FileSystem from 'expo-file-system';
+import axios from 'axios';
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+import { documentReader } from './documentReader';
 
+axios.defaults.headers.get['Access-Control-Allow-Origin'] = '*'
 // Access your API key as an environment variable (see "Set up your API key" above)
 const genAI = new GoogleGenerativeAI(process.env.EXPO_PUBLIC_GEMINI_KEY);
-
-console.log(process.env.EXPO_PUBLIC_GEMINI_KEY)
 
 
 export default function App() {
@@ -17,19 +16,47 @@ export default function App() {
   const [recording, setRecording] = useState();
   const [permissionResponse, requestPermission] = Audio.usePermissions();
   const [recordUri,setrecordURI]=useState("")
-  
+  /////DailyMed API//////////////////======================
+//   const url = 'https://dailymed.nlm.nih.gov/dailymed/services/v2/spls.json';
+//   async function drugs (){
+//   const {respo} = await axios.get(url,{
+//     headers:{
+//       'Cross-Origin-Opener-Policy':'same-origin',
+//       'Access-Control-Allow-Origin':'https://dailymed.nlm.nih.gov/dailymed/services/v2/'
+//     }
+//   })
+
+//     console.log("Drogas",respo)
+// }
+// drugs()
+
+  //////++++++++++++++++++++++++++++++++++++++
+
+druginfo=documentReader()
+
+
 
   ///////GEMINI API=====================================================================
   async function run() {
   // The Gemini 1.5 models are versatile and work with both text-only and multimodal prompts
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
-
-  const prompt = "Write a story about a magic backpack."
+ // const model_embedded=genAI.getGenerativeModel({model: "text-embedding-004"})
+  const question="I am intolerant to LActose can I use this drug?"
+  const context=druginfo
+  const prompt = 
+  `Based on the drug documentation below:
+  ${context}
+  Using a fluid and direct language as you maybe talking to an elder person, answer the following question:
+  ${question}
+  `
 
   const result = await model.generateContent(prompt);
+ // const result_emb=await model_embedded.embedContent(prompt);
   const response = await result.response;
+ // const embedding = result_emb.embedding;
   const text = response.text();
-  console.log(text);
+  console.log("Resposta Prompt\n",text)//,"Resposta embedded",embedding.values);
+
 }
 
   run();
@@ -97,7 +124,7 @@ export default function App() {
   
   return (
     
-      
+    
     <View style={styles.container}>
       
       <Text>LeaFlet app</Text>
@@ -109,6 +136,10 @@ export default function App() {
       <Text>Tocar</Text>
       </Pressable>
            <StatusBar style="auto" />
+           <Image
+        
+        source={""}
+      />
     </View>
     
   );
