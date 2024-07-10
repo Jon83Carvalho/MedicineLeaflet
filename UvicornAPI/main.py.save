@@ -1,0 +1,60 @@
+from fastapi import FastAPI
+import redis
+import os
+import csv
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+
+    "http://192.168.15.6:19006",
+    "http://localhost:19006",
+    "http://www.datandart.com"	
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+REDIS_PASSW=os.environ.get('REDIS_PASSW')
+
+@app.get("/")
+def hello_root():
+    r = redis.Redis(
+    host='redis-12121.c326.us-east-1-3.ec2.cloud.redislabs.com',
+    port=12121,
+    password=REDIS_PASSW)
+
+    #storing data per type
+    keys=r.keys('*')
+
+    #price_data
+    keys_price=list(filter(lambda key: str(key).find("{")>=0,keys))
+    values_price=r.mget(keys_price)
+
+    #count_data
+    keys_count=list(filter(lambda key: str(key).find("{")==-1,keys))
+    values_count=r.mget(keys_count)
+    
+
+    trade_data = [{keys_price[i].decode("utf-8"): values_price[i].decode("utf-8")} for i in range(len(keys_price))]
+
+    
+    # with open('count_data.csv', newline='') as csvfile:
+    #     count_data_file = csv.reader(csvfile, delimiter=',')
+    #     for row in count_data_file:
+    #         count_data=row
+    count_data=[{keys_count[i].decode("utf-8"): values_count[i].decode("utf-8")} for i in range(len(keys_count))]
+
+    res={"count":count_data,"trade_data":trade_data}
+
+    print("res",res)
+    return res
