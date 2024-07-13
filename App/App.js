@@ -114,8 +114,8 @@ export default function App() {
 
     
     const dataDoc = doc
-    console.log(dataDoc)
-    geminiAI(documentReader())
+    
+    
     setdrugList(dataDoc)
     
    }
@@ -132,9 +132,8 @@ export default function App() {
 
     
     const dataDoc = doc
-    console.log("Selected drug data",dataDoc)
-   // geminiAI(documentReader())
-   // setdrugList(dataDoc)
+   
+    geminiAI(dataDoc.data)
     
    }
 
