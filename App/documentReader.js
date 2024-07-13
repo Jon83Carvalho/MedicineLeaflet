@@ -1051,7 +1051,7 @@ const flattext=Object.values(flatten(json))
    text=text.concat(Object.values(flattext)[t],'\n')
    }
 }
-console.log(`First book: `, text);
+//console.log(`First book: `, text);
 
 
 return text

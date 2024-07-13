@@ -3,6 +3,7 @@ import requests
 import os
 import pandas as pd
 import json
+from typing import Union
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -10,8 +11,8 @@ app = FastAPI()
 
 origins = [
     "http://localhost:8081",
+    "http://localhost:9000",
     "http://localhost",
-    "http://localhost:3000",
     "http://192.168.15.6:19006",
     "http://localhost:19006",
     "http://www.datandart.com"	
@@ -27,7 +28,28 @@ app.add_middleware(
 
 
 @app.get("/")
-def hello_root():
-    url="https://dailymed.nlm.nih.gov/dailymed/services/v2/spls.json"
+def read_item(drug_name: Union[str, None] = None):
+    print("hello")
+    if (drug_name):
+        url="https://dailymed.nlm.nih.gov/dailymed/services/v2/spls.json?drug_name="+drug_name
+        print(url)
+    else:
+        url="https://dailymed.nlm.nih.gov/dailymed/services/v2/spls.json?"
+    
+
     res =requests.get(url)
-    return res
+    return dict(res.json())
+
+@app.get("/spls/")
+def read_item(setid: Union[str, None] = None):
+    print("XML Doc")
+    if (setid):
+        url="https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/"+setid+".xml"
+        print(url)
+    else:
+        url="https://dailymed.nlm.nih.gov/dailymed/services/v2/spls.json?"
+    
+
+    res =requests.get(url)
+    
+    return {'data':res.text}
