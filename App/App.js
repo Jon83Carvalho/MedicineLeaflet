@@ -5,6 +5,11 @@ import { Audio } from "expo-av";
 import axios from 'axios';
 import { documentReader } from './documentReader';
 import { geminiAI } from './geminiAI';
+var https = require('https')
+
+var agent = new https.Agent({
+  rejectUnauthorized: false,
+})
 
 
 // Access your API key as an environment variable (see "Set up your API key" above)
@@ -21,6 +26,7 @@ export default function App() {
   const [selectedDrug,setselectedDrug]=useState('');
   const [modalvisible,setmodalvisible]=useState(false);
   const [iaAnswer,setiaAnswer]=useState("");
+  const [buttoncolor,setbuttoncolor]=useState("gray")
   
 
 // druginfo=documentReader()
@@ -112,10 +118,14 @@ export default function App() {
     console.log(query)
     
     query?
-    doc=await axios.get(`http://localhost:9000/?drug_name=${query}`).then((response) => response.data.data):
-    doc=await axios.get(`http://localhost:9000`).then((response) => response.data.data);
+    doc=await axios.get(`https://192.168.15.9:9000/?drug_name=${query}`,
+      {httpAgent:agent})
+      .then((response) => response.data.data):
+    doc=await axios.get(`https://192.168.15.9:9000`,
+    {httpAgent:agent}
+    ).then((response) => response.data.data);
     const dataDoc = doc
-
+    setbuttoncolor("blue")
     setdrugList(dataDoc)
     
    }
@@ -125,8 +135,12 @@ export default function App() {
     console.log("Selected Drug id",selectedDrug)
     
     query?
-    doc=await axios.get(`http://localhost:9000/spls/?setid=${query}`).then((response) => response.data):
-    doc=await axios.get(`http://localhost:9000`).then((response) => response.data);
+    doc=await axios.get(`https://192.168.15.9:9000/spls/?setid=${query}`,
+    {httpAgent:agent}
+    ).then((response) => response.data):
+    doc=await axios.get(`https://192.168.15.9:9000`,
+    {httpAgent:agent}
+    ).then((response) => response.data);
   
     const dataDoc = doc
    
@@ -178,7 +192,7 @@ export default function App() {
         onChangeText={onChangeqText}
         value={qtext}
       />
-      <Pressable onPress={_getDoc} style={{backgroundColor:'gray', borderRadius:8,padding:4}}>
+      <Pressable onPress={_getDoc} style={{backgroundColor:buttoncolor, borderRadius:8,padding:4}}>
       <Text>Pegar doc</Text>
       </Pressable>
      
