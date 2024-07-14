@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from "react";
-import {FlatList,TextInput, StyleSheet, Text, View, Pressable } from "react-native";
+import {FlatList,TextInput, StyleSheet, Text, View, Pressable,Modal } from "react-native";
 import { Audio } from "expo-av";
 import axios from 'axios';
 import { documentReader } from './documentReader';
@@ -17,7 +17,10 @@ export default function App() {
   const [recordUri,setrecordURI]=useState("")
   const [drugList,setdrugList]=useState([{}])
   const [text, onChangeText] = useState('Useless Text');
+  const [qtext, onChangeqText] = useState('Question');
   const [selectedDrug,setselectedDrug]=useState('');
+  const [modalvisible,setmodalvisible]=useState(false);
+  const [iaAnswer,setiaAnswer]=useState("");
   
 
 // druginfo=documentReader()
@@ -111,40 +114,50 @@ export default function App() {
     query?
     doc=await axios.get(`http://localhost:9000/?drug_name=${query}`).then((response) => response.data.data):
     doc=await axios.get(`http://localhost:9000`).then((response) => response.data.data);
-
-    
     const dataDoc = doc
-    
-    
+
     setdrugList(dataDoc)
     
    }
 
-
-
-   async function _getDrugData(query){
-    query=selectedDrug
+   async function _getDrugData(question){
+    const query=selectedDrug
     console.log("Selected Drug id",selectedDrug)
     
     query?
     doc=await axios.get(`http://localhost:9000/spls/?setid=${query}`).then((response) => response.data):
     doc=await axios.get(`http://localhost:9000`).then((response) => response.data);
-
-    
+  
     const dataDoc = doc
    
-    geminiAI(dataDoc.data)
-    
+    const ans = await geminiAI(dataDoc.data,question)
+    console.log("resposta de IA",ans)
+    setiaAnswer(ans)
+    setmodalvisible(true)
    }
-
-    
-
-    
   
   return (
     
-    
     <Wrapper>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalvisible}
+        onRequestClose={() => {
+          Alert.alert('Modal has been closed.');
+          setmodalVisible(!modalvisible);
+        }}>
+          <View style={styles.modalView}>
+          <Text>
+            {iaAnswer}
+          </Text>
+          <Pressable
+              style={styles.button.action}
+              onPress={() => setmodalvisible(!modalvisible)}>
+              <Text>Hide Modal</Text>
+          </Pressable>
+        </View>
+        </Modal>
       
       <Text>LeaFlet app</Text>
 
@@ -158,9 +171,12 @@ export default function App() {
         style={styles.input}
         onChangeText={onChangeText}
         value={text}
-        
-        
-        
+      />
+      <Text>Pergunta:</Text>
+      <TextInput
+        style={styles.input}
+        onChangeText={onChangeqText}
+        value={qtext}
       />
       <Pressable onPress={_getDoc} style={{backgroundColor:'gray', borderRadius:8,padding:4}}>
       <Text>Pegar doc</Text>
@@ -171,7 +187,7 @@ export default function App() {
       <FlatList
         data={drugList}
         renderItem={({item,index}) => 
-        <Pressable onPressIn={()=>setselectedDrug(drugList[index].setid)} onPressOut={_getDrugData}
+        <Pressable onPressIn={()=>setselectedDrug(drugList[index].setid)} onPressOut={()=>_getDrugData(qtext)}
         style={styles.button.action}
         >
           <Text style={styles.item}>{item.title}</Text>
@@ -192,6 +208,27 @@ const Wrapper = props =>{
   )
 }
 const styles = StyleSheet.create({
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 22,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
   container: {
     flex: 1,
     backgroundColor: "#fff",
