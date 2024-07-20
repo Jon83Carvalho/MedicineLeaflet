@@ -1,26 +1,21 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import {FlatList,TextInput, StyleSheet, Text, View, Pressable,Modal } from "react-native";
 import { Audio } from "expo-av";
 import axios from 'axios';
-import { documentReader } from './documentReader';
 import { geminiAI } from './geminiAI';
-var https = require('https')
-
-var agent = new https.Agent({
-  rejectUnauthorized: false,
-})
+import { DocButton } from './DocButton';
 
 
 // Access your API key as an environment variable (see "Set up your API key" above)
 
 
 export default function App() {
-  
+
   const [recording, setRecording] = useState();
-  const [permissionResponse, requestPermission] = Audio.usePermissions();
+  const [permissionResponse, requestPermission] = []//Audio.usePermissions();
   const [recordUri,setrecordURI]=useState("")
-  const [drugList,setdrugList]=useState([{}])
+  const [drugList,setdrugList]=useState(false)
   const [text, onChangeText] = useState('Useless Text');
   const [qtext, onChangeqText] = useState('Question');
   const [selectedDrug,setselectedDrug]=useState('');
@@ -28,38 +23,6 @@ export default function App() {
   const [iaAnswer,setiaAnswer]=useState("");
   const [buttoncolor,setbuttoncolor]=useState("gray")
   
-
-// druginfo=documentReader()
-
-
-
-  ///////GEMINI API=====================================================================
-//   async function GeminiAI(druginfo) {
-//   // The Gemini 1.5 models are versatile and work with both text-only and multimodal prompts
-//   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
-//  // const model_embedded=genAI.getGenerativeModel({model: "text-embedding-004"})
-//   const question="I am intolerant to LActose can I use this drug?"
-//   const context=druginfo
-//   const prompt = 
-//   `Based on the drug documentation below:
-//   ${context}
-//   Using a fluid and direct language as you maybe talking to an elder person, answer the following question:
-//   ${question}
-//   `
-
-//   const result = await model.generateContent(prompt);
-//  // const result_emb=await model_embedded.embedContent(prompt);
-//   const response = await result.response;
-//  // const embedding = result_emb.embedding;
-//   const text = response.text();
-//   //console.log("Resposta Prompt\n",text)//,"Resposta embedded",embedding.values);
-
-// }
-
-
-
-  ///////++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 
   async function _startRecording() {
     try {
@@ -114,42 +77,71 @@ export default function App() {
 
    async function _getDoc(query){
     query=text
+  
+      console.log("LocalHost","Query",query)
+     
+      query?
+      doc=await axios.get(`http://192.168.15.9:9000/?drug_name=${query}`
+      ).catch((err) => {
+        logger.error('Http error', err);
+        error.logged = true;
+        throw err;
+      })
+        .then((response) => response.data.data):
+        doc=await axios.get(`http://192.168.15.9:9000`
+        ).catch((err) => {
+          logger.error('Http error', err);
+          error.logged = true;
+          throw err;
+        })
+        .then((response) => {
+          if (!response.ok) {
+            console.log(`HTTP error: ${response.status}`);
+          }
+          return response.data;
+        })
+        .then((response) => response.data);
+      
     
-    console.log(query)
     
-    query?
-    doc=await axios.get(`https://192.168.15.9:9000/?drug_name=${query}`,
-      {httpAgent:agent})
-      .then((response) => response.data.data):
-    doc=await axios.get(`https://192.168.15.9:9000`,
-    {httpAgent:agent}
-    ).then((response) => response.data.data);
     const dataDoc = doc
+    console.log("doc",dataDoc)        
     setbuttoncolor("blue")
     setdrugList(dataDoc)
     
    }
-
-   async function _getDrugData(question){
+  
+    
+    async function _getDrugData(question){
     const query=selectedDrug
     console.log("Selected Drug id",selectedDrug)
     
-    query?
-    doc=await axios.get(`https://192.168.15.9:9000/spls/?setid=${query}`,
-    {httpAgent:agent}
-    ).then((response) => response.data):
-    doc=await axios.get(`https://192.168.15.9:9000`,
-    {httpAgent:agent}
-    ).then((response) => response.data);
-  
+    try {
+      query?
+      doc=await axios.get(`https://192.168.15.9:9000/spls/?setid=${query}`
+      ).then((response) => response.data):
+      doc=await axios.get(`https://192.168.15.9:9000`
+      ).then((response) => response.data);
+    } catch {
+      query?
+      doc=await axios.get(`http://localhost:9000/spls/?setid=${query}`
+      ).then((response) => response.data):
+      doc=await axios.get(`http://localhost:9000`
+      ).then((response) => response.data);
+
+    }
     const dataDoc = doc
-   
+    
     const ans = await geminiAI(dataDoc.data,question)
     console.log("resposta de IA",ans)
     setiaAnswer(ans)
     setmodalvisible(true)
    }
-  
+  // if(drugList){
+  //   return <pre>...carregando</pre>
+  // }
+
+
   return (
     
     <Wrapper>
@@ -195,6 +187,10 @@ export default function App() {
       <Pressable onPress={_getDoc} style={{backgroundColor:buttoncolor, borderRadius:8,padding:4}}>
       <Text>Pegar doc</Text>
       </Pressable>
+      <DocButton
+        drugtext={text}
+        druglist={drugList}
+      />
      
      
       <StatusBar style="auto" />

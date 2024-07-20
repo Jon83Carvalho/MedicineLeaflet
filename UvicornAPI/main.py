@@ -38,6 +38,7 @@ def read_item(drug_name: Union[str, None] = None):
     
 
     res =requests.get(url)
+    
     return dict(res.json())
 
 @app.get("/spls/")
