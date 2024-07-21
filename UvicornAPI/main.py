@@ -38,9 +38,10 @@ def read_item(drug_name: Union[str, None] = None):
     
 
     res =requests.get(url)
+    resdict=dict(res.json())['data']
     
-    return dict(res.json())
-
+    print(list(resdict))
+    return {'data':resdict}
 @app.get("/spls/")
 def read_item(setid: Union[str, None] = None):
     print("XML Doc")
