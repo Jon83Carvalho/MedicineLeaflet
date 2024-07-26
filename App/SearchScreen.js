@@ -1,33 +1,26 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState,useEffect } from "react";
-import {FlatList,TextInput, StyleSheet, Text, View, Pressable,Modal } from "react-native";
+import React, { useState } from "react";
+import {TextInput, Text, View, Pressable,Modal } from "react-native";
 import { Audio } from "expo-av";
 import axios from 'axios';
-import { geminiAI } from './geminiAI';
-import { DocButton } from './DocButton';
+import { styles } from './cssStyles';
 
+import { geminiAI } from './geminiAI';
 
 // Access your API key as an environment variable (see "Set up your API key" above)
 
 
 export function SearchScreen({navigation}) {
 
-  
-
-  
-  
   const [recording, setRecording] = useState();
   const [permissionResponse, requestPermission] = []//Audio.usePermissions();
   const [recordUri,setrecordURI]=useState("")
-  const [drugList,setdrugList]=useState(false)
-  const [text, onChangeText] = useState('Useless Text');
-  const [qtext, onChangeqText] = useState('Question');
-  const [selectedDrug,setselectedDrug]=useState('');
-  const [modalvisible,setmodalvisible]=useState(false);
-  const [iaAnswer,setiaAnswer]=useState("");
+  const [text, onChangeText] = useState('Type the name of the drug');
   const [buttoncolor,setbuttoncolor]=useState("gray")
-//   sessionStorage.setItem('drugdata','[{}]')
-
+  const [sugnVis,setsugnVis]=useState(false);
+  const [sugName1,setsugName1]=useState('');
+  const [sugName2,setsugName2]=useState('');
+  
   async function _startRecording() {
     try {
       if (permissionResponse.status !== 'granted') {
@@ -78,10 +71,11 @@ export function SearchScreen({navigation}) {
       await sound.playAsync();
     }
    }
+   
 
    function _getDoc(query){
     query=text
-    sessionStorage.setItem('teste','funcionou')
+    sessionStorage.setItem('drugname',query)
 
       console.log("Botão",sessionStorage.getItem('teste'))
      
@@ -92,7 +86,11 @@ export function SearchScreen({navigation}) {
         error.logged = true;
         throw err;
       })
-        .then((response) => response.data.data):
+        .then((response) => {
+
+          sessionStorage.setItem('drugdata',JSON.stringify(response.data.data))        
+          console.log(sessionStorage.getItem('drugdata'))
+        }):
         doc=axios.get(`http://192.168.15.9:9000`
         ).catch((err) => {
           logger.error('Http error', err);
@@ -104,75 +102,80 @@ export function SearchScreen({navigation}) {
             console.log(`HTTP success: ${response.status}`);
             
             sessionStorage.setItem('drugdata',JSON.stringify(response.data.data))
-            setdrugList(sessionStorage.getItem('drugdata'))
+            
           }
           return JSON.stringify(response.data.data);
-        })
-        .then((response) => response.data);
+        });
+       
+    
       
     
-    
     setbuttoncolor("blue")
-    navigation.navigate("Drug List")
+      
+    setTimeout(() => {  
+      const drugdata=sessionStorage.getItem('drugdata')
+      if(drugdata=='[]'){
+        geminiAI(query,'find').then((res)=>{
+        sessionStorage.setItem('sugestion',res)
+        setsugName1(JSON.parse(res).response.name1)
+        setsugName2(JSON.parse(res).response.name2)
+        setsugnVis(true)
+        
+      });
+      
+      
+      } else{
+        
+        navigation.navigate("Drug List")
+      }
+      
+      
+    
+    }, 5000);
     
    }
   
-    
-    async function _getDrugData(question){
-    const query=selectedDrug
-    console.log("Selected Drug id",selectedDrug)
-    
-    try {
-      query?
-      doc=await axios.get(`https://192.168.15.9:9000/spls/?setid=${query}`
-      ).then((response) => response.data):
-      doc=await axios.get(`https://192.168.15.9:9000`
-      ).then((response) => response.data);
-    } catch {
-      query?
-      doc=await axios.get(`http://localhost:9000/spls/?setid=${query}`
-      ).then((response) => response.data):
-      doc=await axios.get(`http://localhost:9000`
-      ).then((response) => response.data);
-
-    }
-    const dataDoc = localStorage.getItem('drugdata')
-    
-    const ans = await geminiAI(dataDoc.data,question)
-    console.log("resposta de IA",ans)
-    setiaAnswer(ans)
-    setmodalvisible(true)
-   }
+   
   
   return (
     
     <Wrapper>
       <Modal
-        animationType="slide"
+        animationType="none"
         transparent={true}
-        visible={modalvisible}
+        visible={sugnVis}
         onRequestClose={() => {
-          Alert.alert('Modal has been closed.');
-          setmodalVisible(!modalvisible);
+          setsugnVis(!sugnVis);
         }}>
-          <View style={styles.modalView}>
-          <Text>
-            {iaAnswer}
-          </Text>
+          <View style={[styles.modalView,{flexDirection:'column'}]}>
+          <View style={{flexDirection:'row'}}>
+          <Pressable style={styles.button.navigation} onPress={()=>{
+            onChangeText(sugName1);
+            setsugnVis(!sugnVis)
+            }}>
+          <Text>{sugName1}</Text>
+          </Pressable>
+          <Pressable style={styles.button.navigation} onPress={()=>{
+            onChangeText(sugName2);
+            setsugnVis(!sugnVis)
+            }}>
+          <Text>{sugName2}</Text>
+          </Pressable>
+          </View>
           <Pressable
-              style={styles.button.action}
-              onPress={() => setmodalvisible(!modalvisible)}>
+              style={styles.button.navigation}
+              onPress={() => setsugnVis(!sugnVis)}>
               <Text>Hide Modal</Text>
           </Pressable>
         </View>
-        </Modal>
+        </Modal>  
       
       <Text>LeaFlet app</Text>
-
-      <Pressable onPress={recording ? _stopRecording : _startRecording} style={{backgroundColor:'gray', borderRadius:8,padding:4}}>
+      
+      <Pressable onPress={recording ? _stopRecording : _startRecording} style={[styles.button.navigation,{visibility:'hidden'}]}>
       <Text>{recording ? 'Stop Recording' : 'Start Recording'}</Text>
       </Pressable>
-      <Pressable onPress={_playRecording} style={{backgroundColor:'gray', borderRadius:8,padding:4}}>
+      <Pressable onPress={_playRecording} style={[styles.button.navigation,{visibility:'hidden'}]}>
       <Text>Tocar</Text>
       </Pressable>
       <TextInput
@@ -180,30 +183,9 @@ export function SearchScreen({navigation}) {
         onChangeText={onChangeText}
         value={text}
       />
-      <Text>Pergunta:</Text>
-      <TextInput
-        style={styles.input}
-        onChangeText={onChangeqText}
-        value={qtext}
-      />
-      <Pressable onPress={_getDoc} style={{backgroundColor:buttoncolor, borderRadius:8,padding:4}}>
+     <Pressable onPress={_getDoc} style={styles.button.navigation}>
       <Text>Pegar doc</Text>
       </Pressable>
-      <DocButton
-        drugtext={text}
-        druglist={drugList}
-      />
-   
-     <FlatList
-        data={JSON.parse(drugList)}
-        renderItem={({item,index}) => 
-        <Pressable onPressIn={()=>setselectedDrug(drugList[index].setid)} onPressOut={()=>_getDrugData(qtext)}
-        style={styles.button.action}
-        >
-          <Text style={styles.item}>{item.title}</Text>
-          </Pressable>}
-          extraData={drugList}
-      />
      
       <StatusBar style="auto" />
       
@@ -221,50 +203,3 @@ const Wrapper = props =>{
     </View>
   )
 }
-const styles = StyleSheet.create({
-  centeredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 22,
-  },
-  modalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  input: {
-    height: 40,
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
-  },
-  item: {
-    padding: 10,
-    fontSize: 18,
-    height: 44,
-  },
-  button: {
-    action:{
-      backgroundColor:'lightblue',
-       borderRadius:8,
-       padding:4
-      }
-  }
-});
