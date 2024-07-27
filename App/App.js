@@ -19,6 +19,7 @@ export default function App() {
 
 sessionStorage.removeItem('drugname');
 sessionStorage.removeItem('drugdata');
+sessionStorage.removeItem('sugestion');
 
 const RootStack = createNativeStackNavigator();
 

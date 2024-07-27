@@ -7,7 +7,6 @@ import { styles } from './cssStyles';
 
 import { geminiAI } from './geminiAI';
 
-// Access your API key as an environment variable (see "Set up your API key" above)
 
 
 export function SearchScreen({navigation}) {
@@ -16,7 +15,7 @@ export function SearchScreen({navigation}) {
   const [permissionResponse, requestPermission] = []//Audio.usePermissions();
   const [recordUri,setrecordURI]=useState("")
   const [text, onChangeText] = useState('Type the name of the drug');
-  const [buttoncolor,setbuttoncolor]=useState("gray")
+  const [loadVisible,setloadVisible]=useState(false)
   const [sugnVis,setsugnVis]=useState(false);
   const [sugName1,setsugName1]=useState('');
   const [sugName2,setsugName2]=useState('');
@@ -37,7 +36,7 @@ export function SearchScreen({navigation}) {
       const { recording } = await Audio.Recording.createAsync( Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
       setRecording(recording);
-      //console.log(navigator.mediaDevices.enumerateDevices())
+      
       console.log('Recording started');
     } catch (err) {
       console.error('Failed to start recording', err);
@@ -57,8 +56,6 @@ export function SearchScreen({navigation}) {
     setrecordURI(uri)
     console.log('Recording stopped and stored at', uri);
 
-    
-
    }
 
    async function _playRecording(){
@@ -77,8 +74,6 @@ export function SearchScreen({navigation}) {
     query=text
     sessionStorage.setItem('drugname',query)
 
-      console.log("Botão",sessionStorage.getItem('teste'))
-     
       query?
       doc=axios.get(`http://192.168.15.9:9000/?drug_name=${query}`
       ).catch((err) => {
@@ -88,8 +83,9 @@ export function SearchScreen({navigation}) {
       })
         .then((response) => {
 
-          sessionStorage.setItem('drugdata',JSON.stringify(response.data.data))        
-          console.log(sessionStorage.getItem('drugdata'))
+          sessionStorage.setItem('drugdata',JSON.stringify(response.data.data))
+          setloadVisible(false)
+          
         }):
         doc=axios.get(`http://192.168.15.9:9000`
         ).catch((err) => {
@@ -102,15 +98,10 @@ export function SearchScreen({navigation}) {
             console.log(`HTTP success: ${response.status}`);
             
             sessionStorage.setItem('drugdata',JSON.stringify(response.data.data))
-            
+            setloadVisible(false)
           }
           return JSON.stringify(response.data.data);
         });
-       
-    
-      
-    
-    setbuttoncolor("blue")
       
     setTimeout(() => {  
       const drugdata=sessionStorage.getItem('drugdata')
@@ -119,27 +110,37 @@ export function SearchScreen({navigation}) {
         sessionStorage.setItem('sugestion',res)
         setsugName1(JSON.parse(res).response.name1)
         setsugName2(JSON.parse(res).response.name2)
+        setloadVisible(false)
         setsugnVis(true)
         
       });
-      
       
       } else{
         
         navigation.navigate("Drug List")
       }
-      
-      
     
     }, 5000);
     
    }
-  
-   
-  
+    
   return (
     
     <Wrapper>
+      <Modal
+        animationType="none"
+        transparent={true}
+        visible={loadVisible}
+        onRequestClose={() => {
+          setloadVisible(!loadvisible);
+        }}>
+          <View style={styles.modalView}>
+          <Text style={styles.textStyle.action}>
+            Loading ...
+          </Text>
+        </View>
+        </Modal>  
+      
       <Modal
         animationType="none"
         transparent={true}
@@ -148,43 +149,47 @@ export function SearchScreen({navigation}) {
           setsugnVis(!sugnVis);
         }}>
           <View style={[styles.modalView,{flexDirection:'column'}]}>
+          <Text style={styles.textStyle.plaintext}>We haven't found "{text}", click the button below that you identify the correct:</Text>
           <View style={{flexDirection:'row'}}>
-          <Pressable style={styles.button.navigation} onPress={()=>{
+          <Pressable style={[styles.button.action,{visibility:sugName1==text?'hidden':''}]} onPress={()=>{
             onChangeText(sugName1);
             setsugnVis(!sugnVis)
             }}>
-          <Text>{sugName1}</Text>
+          <Text style={styles.textStyle.action}>{sugName1}</Text>
           </Pressable>
-          <Pressable style={styles.button.navigation} onPress={()=>{
+          <Pressable style={[styles.button.action,{visibility:(sugName1==sugName2||sugName2==text)?'hidden':''}]} onPress={()=>{
             onChangeText(sugName2);
             setsugnVis(!sugnVis)
             }}>
-          <Text>{sugName2}</Text>
+          <Text style={styles.textStyle.action}>{sugName2}</Text>
           </Pressable>
           </View>
           <Pressable
               style={styles.button.navigation}
               onPress={() => setsugnVis(!sugnVis)}>
-              <Text>Hide Modal</Text>
+              <Text style={styles.textStyle.navigation}>Hide this.</Text>
           </Pressable>
         </View>
         </Modal>  
       
-      <Text>LeaFlet app</Text>
+      <Text style={styles.textStyle.title}>MedLeaFleet App</Text>
       
       <Pressable onPress={recording ? _stopRecording : _startRecording} style={[styles.button.navigation,{visibility:'hidden'}]}>
       <Text>{recording ? 'Stop Recording' : 'Start Recording'}</Text>
       </Pressable>
       <Pressable onPress={_playRecording} style={[styles.button.navigation,{visibility:'hidden'}]}>
-      <Text>Tocar</Text>
+      <Text style={styles.btext}>Tocar</Text>
       </Pressable>
       <TextInput
-        style={styles.input}
+        style={[styles.input,styles.textStyle.default]}
         onChangeText={onChangeText}
+        onFocus={()=>{
+          if(text=='Type the name of the drug'){onChangeText('')}
+        }}
         value={text}
       />
-     <Pressable onPress={_getDoc} style={styles.button.navigation}>
-      <Text>Pegar doc</Text>
+     <Pressable onPress={_getDoc} onPressOut={()=>setloadVisible(true)} style={styles.button.navigation}>
+      <Text style={styles.textStyle.navigation}>Collect medicine data</Text>
       </Pressable>
      
       <StatusBar style="auto" />

@@ -9,23 +9,21 @@ export async function geminiAI(drugtext,q) {
     if(q!='find'){  
     druginfo=documentReader(drugtext);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
-   // const model_embedded=genAI.getGenerativeModel({model: "text-embedding-004"})
-    const question=q//"I am intolerant to LActose can I use this drug?"
+   
+    const question=q
     const context=druginfo
     const prompt = 
     `Based on the drug documentation below:
     ${context}
-    Start mentioning ig the drug is used in humans or not then, using a non-violent speach, fluid and direct language as you explaining to little knowldge people, answer the following question:
+    Start mentioning if the drug is used in humans or not and if can be used by children. Then, using a non-violent speach, fluid and direct language as you explaining to little knowldge people, answer the following question:
     ${question}
     And always include the exact name od the drug from the document in your answer.
     `
   
     const result = await model.generateContent(prompt);
-   // const result_emb=await model_embedded.embedContent(prompt);
+   
     responseAI = result.response;
-   // const embedding = result_emb.embedding;
-   // const text = response.text();
-    console.log("Resposta Prompt\n",responseAI)//,"Resposta embedded",embedding.values);
+    //console.log("Resposta Prompt\n",responseAI)
     }
     else {
 //////-----find suitable options for the drug name

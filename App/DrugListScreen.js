@@ -11,10 +11,11 @@ export function DrugListScreen({navigation}) {
 
 const [drugList,setdrugList]=useState(false)
 const [selectedDrug,setselectedDrug]=useState('');
-const [qtext, onChangeqText] = useState('Question');
+const [qtext, onChangeqText] = useState('');
 const [iaAnswer,setiaAnswer]=useState("");
 const [modalvisible,setmodalvisible]=useState(false);
 const [loadVisible,setloadVisible]=useState(true)
+const [alertVisible,setalertVisible]=useState(false)
 
 
   setTimeout(() => {  
@@ -27,27 +28,30 @@ const [loadVisible,setloadVisible]=useState(true)
 
 async function _getDrugData(question){
   const query=selectedDrug
-  console.log("Selected Drug id",selectedDrug)
-  
+    
   try {
-    query?
+    
     doc=await axios.get(`http://192.168.15.9:9000/spls/?setid=${query}`
-    ).then((response) => response.data):
-    doc=await axios.get(`http://192.168.15.9:9000`
-    ).then((response) => response.data);
+    ).then((response) => {
+     
+      return  response.data
+    })
+    
   } catch {
-    query?
+    
     doc=await axios.get(`http://localhost:9000/spls/?setid=${query}`
-    ).then((response) => response.data):
-    doc=await axios.get(`http://localhost:9000`
-    ).then((response) => response.data);
-
+    ).then((response) => {
+      
+      return response.data
+    })
+    
   }
   const dataDoc = doc
-  console.log(dataDoc)
+  
   const ans = await geminiAI(dataDoc.data,question)
-  console.log("resposta de IA",ans)
+  
   setiaAnswer(ans)
+  
   setmodalvisible(true)
  }
   
@@ -57,12 +61,31 @@ async function _getDrugData(question){
       <Modal
         animationType="none"
         transparent={true}
+        visible={alertVisible}
+        onRequestClose={() => {
+          setalertVisible(!alertVisible);
+        }}>
+          <View style={styles.modalView}>
+          <Text style={styles.textStyle.action}>
+            Write a question about the medicine.
+          </Text>
+          <Pressable
+              style={styles.button.navigation}
+              onPress={() => setalertVisible(!alertVisible)}>
+              <Text style={styles.textStyle.navigation}>OK</Text>
+          </Pressable>
+        </View>
+        </Modal>
+      
+      <Modal
+        animationType="none"
+        transparent={true}
         visible={loadVisible}
         onRequestClose={() => {
           setloadVisible(!loadvisible);
         }}>
           <View style={styles.modalView}>
-          <Text>
+          <Text style={styles.textStyle.action}>
             Loading ...
           </Text>
         </View>
@@ -76,47 +99,53 @@ async function _getDrugData(question){
           setmodalVisible(!modalvisible);
         }}>
           <View style={styles.modalView}>
+          <Text style={styles.textStyle.action}>Find below the answer to your question:</Text>
           <Markdown>{iaAnswer}</Markdown>
-          
-          
-            
           
           <Pressable
               style={styles.button.navigation}
               onPress={() => setmodalvisible(!modalvisible)}>
-              <Text>Hide Modal</Text>
+              <Text style={styles.textStyle.navigation}>OK</Text>
           </Pressable>
         </View>
         </Modal>
+        <Text style={styles.textStyle.title}>MedLeaFleet App</Text>
       <View style={styles.container_sub}>
-      <Text>Searched Drug: {sessionStorage.getItem('drugname')}</Text>
+      <Text style={styles.textStyle.plaintext}>Searched Drug: {sessionStorage.getItem('drugname')}</Text>
       <Pressable style={styles.button.navigation}
               onPress={() =>{
                 sessionStorage.removeItem('drugdata');
                 navigation.navigate("Search Screen");}}>
-              <Text>Back to Search</Text>
+              <Text style={styles.textStyle.navigation}>Back to Search</Text>
         
         </Pressable>
         
-        <Text>Write your question below and select a medicine in the list:</Text>
+        <Text style={styles.textStyle.plaintext}>Write your question below and select a medicine in the list:</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input,styles.textStyle.plaintext]}
         onChangeText={onChangeqText}
         value={qtext}
       />
       </View>
-        <Text>Medicine List:</Text>
+        <Text style={styles.textStyle.plaintext}>Medicine List -Click on the medicine name to see the answer to your question-:</Text>
         <FlatList
         style={styles.flatlist}
         data={JSON.parse(drugList)}
         renderItem={({item,index}) => 
-        <Pressable onPressIn={()=>setselectedDrug(JSON.parse(drugList)[index].setid)} onPressOut={()=>_getDrugData(qtext)}
+        <Pressable onPressIn={()=>setselectedDrug(JSON.parse(drugList)[index].setid)} onPressOut={()=>{
+          if(qtext!=''){
+          _getDrugData(qtext);
+          setloadVisible(true);
+          } else {
+            setalertVisible(true)
+          }
+        }}
         style={styles.button.action}
         >
-          <Text style={styles.item}>{item.title}</Text>
+          <Text style={styles.textStyle.item}>{item.title}</Text>
           </Pressable>}
           extraData={drugList}
-          refreshing={!loadVisible}
+          refreshing={loadVisible}
       />
      
       <StatusBar style="auto" />
