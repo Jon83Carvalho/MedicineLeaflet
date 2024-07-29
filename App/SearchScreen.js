@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {TextInput, Text, View, Pressable,Modal } from "react-native";
 import { Audio } from "expo-av";
 import axios from 'axios';
@@ -19,6 +19,7 @@ export function SearchScreen({navigation}) {
   const [sugnVis,setsugnVis]=useState(false);
   const [sugName1,setsugName1]=useState('');
   const [sugName2,setsugName2]=useState('');
+  const drugList=useRef();
   
   async function _startRecording() {
     try {
@@ -69,45 +70,23 @@ export function SearchScreen({navigation}) {
     }
    }
    
+   async function getData(url){
+    const response=await axios.get(url)
+    return response.data.data
+   }
 
    function _getDoc(query){
-    query=text
-    sessionStorage.setItem('drugname',query)
-
-      query?
-      doc=axios.get(`http://192.168.15.9:9000/?drug_name=${query}`
-      ).catch((err) => {
-        logger.error('Http error', err);
-        error.logged = true;
-        throw err;
-      })
-        .then((response) => {
-
-          sessionStorage.setItem('drugdata',JSON.stringify(response.data.data))
-          setloadVisible(false)
-          
-        }):
-        doc=axios.get(`http://192.168.15.9:9000`
-        ).catch((err) => {
-          logger.error('Http error', err);
-          error.logged = true;
-          throw err;
-        })
-        .then((response) => {
-          if (!response.ok) {
-            console.log(`HTTP success: ${response.status}`);
-            
-            sessionStorage.setItem('drugdata',JSON.stringify(response.data.data))
-            setloadVisible(false)
-          }
-          return JSON.stringify(response.data.data);
-        });
+    
+   console.log("Entrou get Doc")
+    query?
+    getData(`http://192.168.15.9:9000/?drug_name=${query}`).then(res=>drugList.current=JSON.stringify(res)):
+    getData(`http://192.168.15.9:9000/`).then(res=>drugList.current=JSON.stringify(res))
       
     setTimeout(() => {  
-      const drugdata=sessionStorage.getItem('drugdata')
+      const drugdata=drugList.current
       if(drugdata=='[]'){
         geminiAI(query,'find').then((res)=>{
-        sessionStorage.setItem('sugestion',res)
+        
         setsugName1(JSON.parse(res).response.name1)
         setsugName2(JSON.parse(res).response.name2)
         setloadVisible(false)
@@ -116,8 +95,9 @@ export function SearchScreen({navigation}) {
       });
       
       } else{
-        
-        navigation.navigate("Drug List")
+        console.log("FOI")
+        setloadVisible(false)
+        navigation.navigate("Drug List",{data_drug:drugdata,dname:query})
       }
     
     }, 5000);
@@ -188,7 +168,10 @@ export function SearchScreen({navigation}) {
         }}
         value={text}
       />
-     <Pressable onPress={_getDoc} onPressOut={()=>setloadVisible(true)} style={styles.button.navigation}>
+     <Pressable onPress={()=>{
+        _getDoc(text);
+        setloadVisible(true);
+    }}  style={styles.button.navigation}>
       <Text style={styles.textStyle.navigation}>Collect medicine data</Text>
       </Pressable>
      

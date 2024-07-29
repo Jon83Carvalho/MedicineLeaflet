@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from "react";
+import React, { useState,useRef } from "react";
 import {FlatList,TextInput, Text, View, Pressable,Modal } from "react-native";
 import axios from 'axios';
 import { geminiAI } from './geminiAI';
@@ -7,9 +7,10 @@ import { styles } from './cssStyles';
 import Markdown from 'react-native-markdown-display';
 
 
-export function DrugListScreen({route,navigation}) {
+export function SearchScreenTeste({navigation}) {
 
 const [drugList,setdrugList]=useState(false)
+
 const [selectedDrug,setselectedDrug]=useState('');
 const [qtext, onChangeqText] = useState('');
 const [iaAnswer,setiaAnswer]=useState("");
@@ -17,14 +18,13 @@ const [modalvisible,setmodalvisible]=useState(false);
 const [loadVisible,setloadVisible]=useState(true)
 const [alertVisible,setalertVisible]=useState(false)
 
-const {data_drug,dname}=route.params;
-console.log('data params',data_drug,dname)
-  setTimeout(() => {  
-    
-    setdrugList(data_drug)
-    setloadVisible(false)
+async function meddata() {
+  
+    const ddata=await axios.get(`http://192.168.15.9:9000`)
+      return ddata.data.data
 
-}, 2000);
+      }
+ 
 
 
 async function _getDrugData(question){
@@ -55,8 +55,20 @@ async function _getDrugData(question){
   
   setmodalvisible(true)
  }
+meddata().then(res=>setdrugList(JSON.stringify(res)))
+
+ setTimeout(() => {  
+ 
+  console.log("FOI TIMEOUT")
+  setloadVisible(false)
   
-  return (
+}, 1000);
+ 
+ if(!drugList){
+  return <pre>carregando</pre>
+ } 
+ 
+   return (
     
     <Wrapper>
       <Modal
@@ -112,10 +124,10 @@ async function _getDrugData(question){
         </Modal>
         <Text style={styles.textStyle.title}>MedLeaFleet App</Text>
       <View style={styles.container_sub}>
-      <Text style={styles.textStyle.plaintext}>Searched Drug: {dname}</Text>
+      <Text style={styles.textStyle.plaintext}>Searched Drug: {sessionStorage.getItem('drugname')}</Text>
       <Pressable style={styles.button.navigation}
               onPress={() =>{
-               // sessionStorage.removeItem('drugdata');
+                sessionStorage.removeItem('drugdata');
                 navigation.navigate("Search Screen");}}>
               <Text style={styles.textStyle.navigation}>Back to Search</Text>
         

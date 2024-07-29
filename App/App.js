@@ -1,12 +1,10 @@
 import React, {  } from "react";
-import {StyleSheet } from "react-native";
-
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SearchScreen } from './SearchScreen';
 import { DrugListScreen } from './DrugListScreen';
 import { StartScreen } from "./StartScreen";
-import { styles } from "./cssStyles";
+import { SearchScreenTeste } from "./SearchScreenTest";
 
 
 
@@ -37,6 +35,7 @@ const RootStack = createNativeStackNavigator();
       name="Search Screen" 
       component={SearchScreen}
     />
+    
     <RootStack.Screen
             name="Drug List" 
             component={DrugListScreen}
