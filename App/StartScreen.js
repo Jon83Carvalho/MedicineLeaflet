@@ -46,7 +46,7 @@ export function StartScreen({navigation}) {
 }
 const Wrapper = props =>{
   return (
-    <View style={styles.container}>
+    <View style={styles.container_start}>
       {props.children}
     </View>
   )

@@ -15,12 +15,13 @@ export const styles = StyleSheet.create({
       alignItems: 'center',
       marginTop: 22,
     },
-    modalView: {
-      margin: 20,
+    modalView_answer: {
+      margin: 10,
       backgroundColor: 'white',
-      borderRadius: 20,
-      padding: 35,
+      borderRadius: 10,
+      padding: 15,
       alignItems: 'center',
+      
       shadowColor: '#000',
       shadowOffset: {
         width: 0,
@@ -30,7 +31,34 @@ export const styles = StyleSheet.create({
       shadowRadius: 4,
       elevation: 5,
     },
+    modalView: {
+      margin: 20,
+      backgroundColor: 'white',
+      borderRadius: 20,
+      padding: 35,
+      alignItems: 'center',
+      
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+    },
+    modalView_scroll: {
+      backgroundColor: 'white',
+      height:'50%'
+    },
     container: {
+      flex: 1,
+      backgroundColor: colorspallet.branco,
+      alignItems: "center",
+      justifyContent: "flex-start",
+      flexDirection:"column"
+    },
+    container_start: {
       flex: 1,
       backgroundColor: colorspallet.branco,
       alignItems: "center",
@@ -38,22 +66,22 @@ export const styles = StyleSheet.create({
       flexDirection:"column"
     },
     container_sub:{
-        flex: 0.5,
+        
       backgroundColor: colorspallet.branco,
       alignItems: "center",
-      justifyContent: "center",
+      justifyContent: "flex-start",
     
     },
     flatlist:{
-        flex: 5,
+        
       backgroundColor: colorspallet.branco
     
     },
     input: {
       height: 40,
-      margin: 12,
+      margin: 6,
       borderWidth: 1,
-      padding: 10,
+      padding: 5,
       
     },
     
@@ -63,6 +91,11 @@ export const styles = StyleSheet.create({
         fontWeight:'bold',
         fontSize:"12pt"
       },
+      back:{
+          color:"#eeeeee",
+          fontWeight:'bold',
+          fontSize:"12pt"
+              },
       plaintext:{
         color:"#222222",
         fontWeight:'semibold',
@@ -72,7 +105,14 @@ export const styles = StyleSheet.create({
       title:{
         color:"#111111",
         fontWeight:'bold',
-        fontSize:"16pt"
+        fontSize:"16pt",
+        lineHeight:50
+      },
+      subtitle:{
+        color:"#111111",
+        fontWeight:'bold',
+        fontSize:"14pt",
+        lineHeight:50
       },
       item: {
         color:"#222222",
@@ -92,6 +132,24 @@ export const styles = StyleSheet.create({
       }
     },
     button: {
+      back:{
+        fontSize:12,
+        backgroundColor:colorspallet.medio,
+        justifyContent:'center',
+        margin: 5,
+        borderRadius: 5,
+        padding: 8,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0,
+        shadowRadius: 4,
+        elevation: 5,
+  
+      },
       action:{
         fontSize:15,
         backgroundColor:colorspallet.claro,

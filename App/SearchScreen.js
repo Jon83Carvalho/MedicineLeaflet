@@ -79,8 +79,8 @@ export function SearchScreen({navigation}) {
     
    console.log("Entrou get Doc")
     query?
-    getData(`http://192.168.15.9:9000/?drug_name=${query}`).then(res=>drugList.current=JSON.stringify(res)):
-    getData(`http://192.168.15.9:9000/`).then(res=>drugList.current=JSON.stringify(res))
+    getData(`https://www.datandart.com:9000/?drug_name=${query}`).then(res=>drugList.current=JSON.stringify(res)):
+    getData(`https://www.datandart.com:9000/`).then(res=>drugList.current=JSON.stringify(res))
       
     setTimeout(() => {  
       const drugdata=drugList.current
@@ -95,7 +95,7 @@ export function SearchScreen({navigation}) {
       });
       
       } else{
-        console.log("FOI")
+        
         setloadVisible(false)
         navigation.navigate("Drug List",{data_drug:drugdata,dname:query})
       }
@@ -114,10 +114,12 @@ export function SearchScreen({navigation}) {
         onRequestClose={() => {
           setloadVisible(!loadvisible);
         }}>
+          <View style={{height:"100%",justifyContent:'center'}}>
           <View style={styles.modalView}>
           <Text style={styles.textStyle.action}>
             Loading ...
           </Text>
+        </View>
         </View>
         </Modal>  
       
@@ -169,9 +171,10 @@ export function SearchScreen({navigation}) {
         value={text}
       />
      <Pressable onPress={()=>{
+      if(text!='Type the name of the drug'){
         _getDoc(text);
         setloadVisible(true);
-    }}  style={styles.button.navigation}>
+    }}}  style={styles.button.navigation}>
       <Text style={styles.textStyle.navigation}>Collect medicine data</Text>
       </Pressable>
      
@@ -186,7 +189,7 @@ export function SearchScreen({navigation}) {
 }
 const Wrapper = props =>{
   return (
-    <View style={styles.container}>
+    <View style={styles.container_start}>
       {props.children}
     </View>
   )

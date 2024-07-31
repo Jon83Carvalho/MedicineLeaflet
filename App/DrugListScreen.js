@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from "react";
-import {FlatList,TextInput, Text, View, Pressable,Modal } from "react-native";
+import React, { useState,useRef } from "react";
+import {FlatList,TextInput, Text, View, Pressable,Modal,ScrollView } from "react-native";
 import axios from 'axios';
 import { geminiAI } from './geminiAI';
 import { styles } from './cssStyles';
@@ -9,8 +9,7 @@ import Markdown from 'react-native-markdown-display';
 
 export function DrugListScreen({route,navigation}) {
 
-const [drugList,setdrugList]=useState(false)
-const [selectedDrug,setselectedDrug]=useState('');
+const [drugList,setdrugList]=useState(false);
 const [qtext, onChangeqText] = useState('');
 const [iaAnswer,setiaAnswer]=useState("");
 const [modalvisible,setmodalvisible]=useState(false);
@@ -18,7 +17,7 @@ const [loadVisible,setloadVisible]=useState(true)
 const [alertVisible,setalertVisible]=useState(false)
 
 const {data_drug,dname}=route.params;
-console.log('data params',data_drug,dname)
+
   setTimeout(() => {  
     
     setdrugList(data_drug)
@@ -27,12 +26,12 @@ console.log('data params',data_drug,dname)
 }, 2000);
 
 
-async function _getDrugData(question){
-  const query=selectedDrug
+async function _getDrugData(question,drugid){
+  const query=drugid
     
   try {
     
-    doc=await axios.get(`http://192.168.15.9:9000/spls/?setid=${query}`
+    doc=await axios.get(`https://www.datandart.com:9000/spls/?setid=${query}`
     ).then((response) => {
      
       return  response.data
@@ -40,7 +39,7 @@ async function _getDrugData(question){
     
   } catch {
     
-    doc=await axios.get(`http://localhost:9000/spls/?setid=${query}`
+    doc=await axios.get(`https://www.datandart.com:9000/spls/?setid=${query}`
     ).then((response) => {
       
       return response.data
@@ -85,10 +84,12 @@ async function _getDrugData(question){
         onRequestClose={() => {
           setloadVisible(!loadvisible);
         }}>
+          <View style={{height:"100%",justifyContent:'center'}}>
           <View style={styles.modalView}>
           <Text style={styles.textStyle.action}>
             Loading ...
           </Text>
+        </View>
         </View>
         </Modal>  
       <Modal
@@ -99,47 +100,54 @@ async function _getDrugData(question){
           Alert.alert('Modal has been closed.');
           setmodalVisible(!modalvisible);
         }}>
-          <View style={styles.modalView}>
+          <View style={[styles.modalView_answer,{height:'80%'}]}>
+          <ScrollView style={styles.modalView_scroll}>
           <Text style={styles.textStyle.action}>Find below the answer to your question:</Text>
           <Markdown>{iaAnswer}</Markdown>
-          
-          <Pressable
+        </ScrollView>
+        <Pressable
               style={styles.button.navigation}
               onPress={() => setmodalvisible(!modalvisible)}>
               <Text style={styles.textStyle.navigation}>OK</Text>
           </Pressable>
         </View>
         </Modal>
-        <Text style={styles.textStyle.title}>MedLeaFleet App</Text>
+        
       <View style={styles.container_sub}>
-      <Text style={styles.textStyle.plaintext}>Searched Drug: {dname}</Text>
-      <Pressable style={styles.button.navigation}
+      <Text style={styles.textStyle.title}>MedLeaFleet App</Text>
+      <View style={{flexDirection:'row',alignContent:'space-around'}}>
+      
+      <Pressable style={styles.button.back}
               onPress={() =>{
-               // sessionStorage.removeItem('drugdata');
+               
                 navigation.navigate("Search Screen");}}>
-              <Text style={styles.textStyle.navigation}>Back to Search</Text>
+              <Text style={styles.textStyle.back}>Back to Search</Text>
         
         </Pressable>
-        
-        <Text style={styles.textStyle.plaintext}>Write your question below and select a medicine in the list:</Text>
+        <Text style={styles.textStyle.plaintext}>Searched Drug: {dname}</Text>
+        </View>
+      <Text style={styles.textStyle.plaintext}>Write your question below and select a medicine in the list:</Text>
       <TextInput
         style={[styles.input,styles.textStyle.plaintext]}
         onChangeText={onChangeqText}
         value={qtext}
       />
+      <Text style={styles.textStyle.subtitle}>Medicine List</Text>
+      <Text style={[styles.textStyle.plaintext,{textAlign:'center'}]}>-Click on the medicine name to see the answer to your question-:</Text>
       </View>
-        <Text style={styles.textStyle.plaintext}>Medicine List -Click on the medicine name to see the answer to your question-:</Text>
+        
         <FlatList
         style={styles.flatlist}
         data={JSON.parse(drugList)}
         renderItem={({item,index}) => 
-        <Pressable onPressIn={()=>setselectedDrug(JSON.parse(drugList)[index].setid)} onPressOut={()=>{
+        <Pressable onPress={()=>{
           if(qtext!=''){
-          _getDrugData(qtext);
+          _getDrugData(qtext,JSON.parse(drugList)[index].setid);
           setloadVisible(true);
           } else {
             setalertVisible(true)
           }
+          
         }}
         style={styles.button.action}
         >
@@ -155,7 +163,6 @@ async function _getDrugData(question){
       </Wrapper>
     
   );
-
 
 }
 const Wrapper = props =>{
