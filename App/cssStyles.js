@@ -114,6 +114,12 @@ export const styles = StyleSheet.create({
         fontSize:"14pt",
         lineHeight:50
       },
+      subtitle_d:{
+        color:"#111111",
+        fontWeight:'bold',
+        fontSize:"1.5vh",
+        lineHeight:50
+      },
       item: {
         color:"#222222",
         fontWeight:'bold',

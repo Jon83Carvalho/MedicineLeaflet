@@ -1,5 +1,5 @@
 import React, {  } from "react";
-import {Text, View, Pressable } from "react-native";
+import {Text, View, Pressable,Image } from "react-native";
 import { styles } from "./cssStyles";
 
 // Access your API key as an environment variable (see "Set up your API key" above)
@@ -10,17 +10,7 @@ export function StartScreen({navigation}) {
   return (
     
     <Wrapper>
-          <Text style={
-            [{
-            padding:10,
-            width:'100%',
-            flex:0.2,
-            verticalAlign:'top',
-            textAlign:'left',
-            
-            },
-            styles.textStyle.title
-            ]}>MedLeaFleet App</Text>
+          <Image source={require('./assets/images/medleafleat.png')} style={{height:'20%',resizeMode:'contain'}}/>
           <Pressable
               style={[styles.button.navigation,{borderRadius:0,width:'100%',flex:0.1,justifyContent:'center'}]}
               onPress={() => navigation.navigate("Search Screen")}>
@@ -34,8 +24,9 @@ export function StartScreen({navigation}) {
             verticalAlign:'top',
             textAlign:'right',
             
+            
             },
-            styles.textStyle.title
+            styles.textStyle.subtitle_d
             ]}>Developed by: jonas.carvalho@gmail.com</Text>
      
       </Wrapper>

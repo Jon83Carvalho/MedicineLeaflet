@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState,useRef } from "react";
-import {FlatList,TextInput, Text, View, Pressable,Modal,ScrollView } from "react-native";
+import React, { useState } from "react";
+import {FlatList,TextInput, Text, View, Pressable,Modal,ScrollView,Image} from "react-native";
 import axios from 'axios';
 import { geminiAI } from './geminiAI';
 import { styles } from './cssStyles';
@@ -112,19 +112,21 @@ async function _getDrugData(question,drugid){
           </Pressable>
         </View>
         </Modal>
-        
+        <Image source={require('./assets/images/medleafleat.png')} style={{height:'10%',resizeMode:'contain'}}/>
       <View style={styles.container_sub}>
-      <Text style={styles.textStyle.title}>MedLeaFleet App</Text>
+        
+        
+        
       <View style={{flexDirection:'row',alignContent:'space-around'}}>
       
-      <Pressable style={styles.button.back}
-              onPress={() =>{
-               
-                navigation.navigate("Search Screen");}}>
-              <Text style={styles.textStyle.back}>Back to Search</Text>
-        
-        </Pressable>
-        <Text style={styles.textStyle.plaintext}>Searched Drug: {dname}</Text>
+          <Pressable style={styles.button.back}
+                  onPress={() =>{
+                  
+                    navigation.navigate("Search Screen");}}>
+                  <Text style={styles.textStyle.back}>Back to Search</Text>
+            
+            </Pressable>
+            <Text style={styles.textStyle.plaintext}>Searched Drug: {dname}</Text>
         </View>
       <Text style={styles.textStyle.plaintext}>Write your question below and select a medicine in the list:</Text>
       <TextInput

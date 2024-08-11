@@ -30,16 +30,18 @@ const RootStack = createNativeStackNavigator();
   <RootStack.Screen
       name="Start Screen" 
       component={StartScreen}
+      option={{title: 'MedLeaFleat Agent'}}
     />
     <RootStack.Screen
       name="Search Screen" 
       component={SearchScreen}
+      option={{title: 'MedLeaFleat Agent'}}
     />
     
     <RootStack.Screen
             name="Drug List" 
             component={DrugListScreen}
-            option={{title: 'Drug List'}}
+            option={{title: 'MedLeaFleat Agent'}}
     />
     </RootStack.Navigator> 
 </NavigationContainer>

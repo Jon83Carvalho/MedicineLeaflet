@@ -1,2 +1,4 @@
 #cert docs
 *.pem
+
+*.env

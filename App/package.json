@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "expo/AppEntry.js",
   "scripts": {
-    "start": "HTTPS=true SSL_CRT_FILE=cert.pem SSL_KEY_FILE=key.pem expo start",
+    "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web"
@@ -24,7 +24,6 @@
     "flat": "^6.0.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-markdown": "^9.0.1",
     "react-media-devices": "^1.1.5",
     "react-native": "0.74.2",
     "react-native-markdown-display": "^7.0.2",

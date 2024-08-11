@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useRef, useState } from "react";
-import {TextInput, Text, View, Pressable,Modal } from "react-native";
+import {TextInput, Text, View, Pressable,Modal,Image } from "react-native";
 import { Audio } from "expo-av";
 import axios from 'axios';
 import { styles } from './cssStyles';
@@ -154,7 +154,7 @@ export function SearchScreen({navigation}) {
         </View>
         </Modal>  
       
-      <Text style={styles.textStyle.title}>MedLeaFleet App</Text>
+        <Image source={require('./assets/images/medleafleat.png')} style={{height:'20%',resizeMode:'contain'}}/>
       
       <Pressable onPress={recording ? _stopRecording : _startRecording} style={[styles.button.navigation,{visibility:'hidden'}]}>
       <Text>{recording ? 'Stop Recording' : 'Start Recording'}</Text>
